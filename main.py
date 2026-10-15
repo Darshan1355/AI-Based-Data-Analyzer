@@ -15,7 +15,8 @@ from modules.llm_manager import (
     get_env_groq_key,
     fetch_lm_studio_models,
     normalize_lm_studio_url,
-    is_lm_studio_reachable
+    is_lm_studio_reachable,
+    fetch_groq_models
 )
 from modules.sql_engine import execute_sql_query, validate_sql_query
 from modules.preprocessor import detect_quality_issues, apply_preprocessing
@@ -168,17 +169,26 @@ with st.sidebar:
     else:
         env_key = get_env_groq_key()
         has_secret = bool(env_key)
-        
-        groq_api_key = st.text_input(
-            "Groq API Key",
-            value=env_key,
-            type="password",
-            placeholder="gsk_..." if not has_secret else "Loaded from Streamlit Secrets / .env",
-            help="Loaded from Streamlit Cloud Secrets or .env by default. You can override it here."
-        )
+
+        if has_secret:
+            # Key is already loaded from Streamlit Secrets or .env — don't expose it in the UI
+            st.success("🔑 Groq API Key loaded automatically.")
+            st.caption("Key is configured via Streamlit Secrets or .env file.")
+            groq_api_key = env_key   # use silently
+        else:
+            groq_api_key = st.text_input(
+                "Groq API Key",
+                value="",
+                type="password",
+                placeholder="gsk_...",
+                help="Set GROQ_API_KEY in Streamlit Cloud Secrets (App Settings → Secrets), or paste it here."
+            )
+
+        # Dynamically fetch models available for this API key
+        _, dynamic_models, _ = fetch_groq_models(api_key=groq_api_key)
         selected_model = st.selectbox(
             "Groq Model",
-            GROQ_MODELS,
+            dynamic_models,
             index=0
         )
         llm_ready, llm, llm_status_msg = initialize_llm(

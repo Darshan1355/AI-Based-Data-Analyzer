@@ -20,14 +20,45 @@ try:
 except ImportError:
     from langchain_community.chat_models import init_chat_model  # type: ignore
 
-# Default Groq Models
+# Default Groq Models (fallback list; fetch_groq_models() queries the account dynamically)
 GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "meta-llama-3.1-8b-instruct-abliterated",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it"
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.8-27b",
+    "allam-2-7b"
 ]
+
+def fetch_groq_models(api_key: Optional[str] = None) -> Tuple[bool, list, str]:
+    """Queries Groq endpoint to retrieve available chat models for the current API key."""
+    import requests
+    effective_key = api_key.strip() if api_key and api_key.strip() else get_env_groq_key()
+    fallback_models = [
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b",
+        "qwen/qwen3.8-27b",
+        "allam-2-7b"
+    ]
+    if not effective_key:
+        return False, fallback_models, "Groq API key not provided."
+        
+    try:
+        headers = {"Authorization": f"Bearer {effective_key}"}
+        resp = requests.get("https://api.groq.com/openai/v1/models", headers=headers, timeout=3.0)
+        if resp.status_code == 200:
+            data = resp.json().get("data", [])
+            chat_models = [
+                m["id"] for m in data 
+                if not any(x in m["id"].lower() for x in ["whisper", "guard", "safeguard", "orpheus"])
+            ]
+            if chat_models:
+                # Prioritize fast gpt-oss-20b if available
+                if "openai/gpt-oss-20b" in chat_models:
+                    chat_models.remove("openai/gpt-oss-20b")
+                    chat_models.insert(0, "openai/gpt-oss-20b")
+                return True, chat_models, f"Discovered {len(chat_models)} active Groq model(s)."
+        return False, fallback_models, f"Groq responded with status {resp.status_code}."
+    except Exception as e:
+        return False, fallback_models, f"Could not fetch Groq models: {e}"
 
 def get_env_groq_key() -> str:
     """
@@ -113,7 +144,7 @@ def initialize_llm(
                 return False, None, "Groq API Key is missing. Please configure GROQ_API_KEY in Streamlit Secrets, .env, or enter it in the sidebar."
             
             effective_base_url = base_url.strip() if base_url and base_url.strip() else "https://api.groq.com/openai/v1"
-            effective_model = model.strip() if model and model.strip() else "llama-3.3-70b-versatile"
+            effective_model = model.strip() if model and model.strip() else "openai/gpt-oss-20b"
             llm = init_chat_model(
                 model=effective_model,
                 model_provider="openai",
