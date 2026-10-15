@@ -1,0 +1,12 @@
+id,employee_name,department,salary,join_date,rating,city,status,constant_code
+101, Alice Smith ,Sales,75000,2022-03-15,4.8,New York,active,US100
+102,Bob Jones,Engineering,95000,2021-06-01,4.5,San Francisco,Active,US100
+103, Charlie Brown ,Marketing,62000,2023-01-10,3.9,Chicago,ACTIVE,US100
+104,Diana Prince,Engineering,110000,2020-11-20,4.9,San Francisco,active,US100
+105,Evan Wright,Sales,,2022-08-14,4.1,New York,inactive,US100
+106,Fiona Gallagher,HR,58000,2023-04-05,,Chicago,active,US100
+107,George Clark,Marketing,64000,2021-09-18,4.2,New York,active,US100
+108,Hannah Abbott,Engineering,98000,2022-01-22,4.6,San Francisco,Active,US100
+109,Ian Malcolm,Sales,72000,2020-05-30,4.0,Chicago,active,US100
+110,Julia Roberts,Engineering,350000,2019-02-15,5.0,San Francisco,active,US100
+110,Julia Roberts,Engineering,350000,2019-02-15,5.0,San Francisco,active,US100

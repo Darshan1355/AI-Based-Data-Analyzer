@@ -1,7 +1,33 @@
-.env.env
-.env.*
-!.env.example
-myenv/
+# Streamlit Secrets (Never commit secrets)
+.streamlit/secrets.toml
+!.streamlit/secrets.toml.example
+
+# Environment Secrets
 .env
 .env.*
 !.env.example
+
+# Virtual Environments
+venv/
+.venv/
+env/
+myenv/
+
+# Python Cache & Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Sensitive or Temporary Datasets (Allow only synthetic sample_data.csv)
+*.csv
+!sample_data.csv
+*.xlsx
+*.parquet
+
+# OS generated files
+.DS_Store
+Thumbs.db
